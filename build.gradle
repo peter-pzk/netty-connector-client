@@ -1,0 +1,172 @@
+import java.util.concurrent.TimeUnit
+
+buildscript {
+    ext {
+        versionType = 'RELEASE'
+        repositoryUrl = 'http://172.16.138.213:8081/repository/maven-public/'
+
+        set('springBootVersion', "2.3.4.RELEASE")
+        set('nacosVersion', "2.2.4.RELEASE")
+    }
+    repositories {
+        maven {
+            url 'http://172.16.138.213:8081/repository/maven-public/'
+            allowInsecureProtocol true
+            credentials {
+                username 'admin'
+                password 'admin'
+            }
+        }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.3.4.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+}
+
+def artifactId = 'netty-connector-client'
+
+
+springBoot {
+    buildInfo {
+        properties {
+            artifact = "${artifactId}"
+            version = "${rootProject.version}-${versionType}"
+            group = "${rootProject.group}"
+            name = 'Netty Connector Client Application'
+        }
+    }
+}
+
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'http://172.16.138.213:8081/repository/maven-public/'
+        allowInsecureProtocol true
+        credentials {
+            username 'admin'
+            password 'admin'
+        }
+    }
+}
+
+ext {
+    set('springCloudVersion', "Hoxton.SR9")
+
+    configs = ["*.yml", "*.xml", "*.sh"]
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+configurations.all {
+    // 刷新策略配置，不缓存
+    resolutionStrategy {
+        // cache dynamic versions for 10 minutes
+        cacheDynamicVersionsFor 60, TimeUnit.SECONDS
+        // don't cache changing modules at all
+        cacheChangingModulesFor 0, TimeUnit.SECONDS
+    }
+}
+
+apply plugin: "java"
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation fileTree(dir: 'src/main/lib', includes: ['*.jar'])
+    implementation 'io.springfox:springfox-swagger2:2.9.2'
+    implementation 'com.github.xiaoymin:swagger-bootstrap-ui:1.9.2'
+    implementation 'com.google.guava:guava:29.0-jre'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'io.netty:netty-all:4.1.52.Final'
+    implementation 'com.google.protobuf:protobuf-java:3.15.3'
+    implementation 'com.google.protobuf:protobuf-java-util:3.15.3'
+    implementation 'org.projectlombok:lombok:1.18.18'
+
+
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    enabled = true
+    manifest {
+        attributes 'Main-Class': 'com.sumscope.netty.connector.client.NettyConnectorClientApplication'
+    }
+    exclude configs
+}
+
+
+// 将依赖包复制到lib目录
+task copyLib(type: Copy) {
+    delete "$buildDir/libs/$artifactId/lib"
+    from configurations.runtimeClasspath
+    into "$buildDir/libs/$artifactId/lib"
+}
+
+// 将配置复制到config目录
+task copyConfigs(type: Copy) {
+    delete "$buildDir/libs/$artifactId/"
+    from "src/main/resources"
+    include("*.yml", "*.xml", "*.sh")
+    into "$buildDir/libs/$artifactId/"
+}
+
+task copyProject(type: Copy) {
+    final distDir = "$buildDir/libs/$artifactId"
+    from "$buildDir/libs"
+    include("*.jar")
+    into distDir
+}
+
+bootJar {
+    archiveFileName = "$artifactId/${artifactId}.jar"
+    excludes = ["*.jar"]
+    exclude configs
+    // lib目录的清除和复制任务
+    dependsOn copyLib
+    dependsOn copyConfigs
+
+    // 指定依赖包的路径
+    manifest {
+        attributes "Manifest-Version": 1.0, 'Class-Path': configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' ')
+    }
+}
+
+task distZip(type: Zip, dependsOn: [bootJar, copyProject]) {
+    from fileTree("$buildDir/libs/$artifactId")
+    archiveName "${artifactId}.zip"
+    destinationDir file("$buildDir/distributions")
+}
+
+task distTar(type: Tar, dependsOn: [bootJar, copyProject]) {
+    from fileTree("$buildDir/libs/$artifactId")
+    archiveName "${artifactId}.tar"
+    destinationDir file("$buildDir/distributions")
+}

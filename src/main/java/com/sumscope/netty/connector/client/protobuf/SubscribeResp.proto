@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+// 生成的包名
+option java_package = "com.sumscope.netty.connector.client.protobuf";
+//生成的java名
+option java_outer_classname = "SubscribeResp";
+
+//银行间做市请求回复委托				
+message BankMtkRequestResp {
+  /**
+    * 第三方系统自定义号
+    */
+  int32  extsystem_id         = 1;
+
+  /**
+   * 第三方系统自定义说明
+   */
+  string third_reff           = 2;
+
+  /**
+   * 委托序号
+   */
+  int32  entrust_no           = 3;
+
+  /**
+   * 委托失败代码
+   */
+  int32  entrust_fail_code    = 4;
+
+  /**
+   * 失败原因
+   */
+  string fail_cause           = 5;
+
+  /**
+   * 风控判断流水号
+   */
+  int32  risk_serial_no       = 6;
+
+  /**
+   * 证券代码
+   */
+  string stock_code           = 7;
+
+  /**
+   * 委托方向
+   */
+  string entrust_direction    = 8;
+
+  /**
+   * 风控序号
+   */
+  int32  risk_no              = 9;
+
+  /**
+   * 风控类型
+   */
+  string risk_type            = 10;
+
+  /**
+   * 风控说明
+   */
+  string risk_summary         = 11;
+
+  /**
+   * 风控触警操作
+   */
+  string risk_operation       = 12;
+
+  /**
+   * 风控触发风控说明
+   */
+  string remark_short         = 13;
+
+  /**
+   * 风控阀值
+   */
+  double risk_threshold_value = 14;
+
+  /**
+   * 风控计算值
+   */
+  double risk_value           = 15;
+}

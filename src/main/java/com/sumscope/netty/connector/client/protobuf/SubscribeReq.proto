@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+// 生成的包名
+option java_package = "com.sumscope.netty.connector.client.protobuf";
+//生成的java名
+option java_outer_classname = "SubscribeReq";
+
+//银行间做市请求回复委托
+message BankMtkRequestReq {
+
+  //令牌号
+  //string user_token = 1;
+
+  /**
+   * 账户编号
+   */
+  string account_code        = 1;
+
+  /**
+   *组合编号
+   */
+  string combi_no            = 2;
+
+  /**
+    * 投资类型
+    */
+  string invest_type         = 3;
+
+  /**
+   * 请求编号
+   */
+  string request_id          = 4;
+
+  /**
+   * 本方交易员
+   */
+  string owner_operator_name = 5;
+
+  /**
+   *净价
+   */
+  double net_price           = 6;
+
+  /**
+   * 券面总额
+   */
+  double face_balance        = 7;
+
+  /**
+   * 有效时间
+   */
+  int32  valid_time          = 8;
+
+  /**
+   * 第三方系统自定义号
+   */
+  int32  extsystem_id        = 9;
+
+  /**
+   * 第三方系统自定义说明
+   */
+  string third_reff          = 10;
+}

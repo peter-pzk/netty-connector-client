@@ -1,0 +1,10 @@
+server:
+  port: 6261
+
+spring:
+  application:
+    name: netty-connector-client
+
+netty:
+  host: 127.0.0.1
+  port: 8888
